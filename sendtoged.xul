@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<overlay id="sample" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+<script>
+function InjectionGED()
+{
+    //BNO2020-07-21 tidying up and translating comments into english
+	
+	//Windows Registry variables reading
+    
+	    var wrk = Components.classes["@mozilla.org/windows-registry-key;1"].createInstance(Components.interfaces.nsIWindowsRegKey);
+				wrk.open(wrk.ROOT_KEY_LOCAL_MACHINE,"SOFTWARE\\Ged\\Mail",wrk.ACCESS_READ);
+				var folderInjectionCourrier = wrk.readStringValue("folderInjectionCourrier");
+				var folderInjectionClientFolder = wrk.readStringValue("folderInjectionClientFolder");
+				var programmeIndexation = wrk.readStringValue("programmeIndexation");
+				wrk.close();
+		
+	//Creating pointers for the files to be created (.eml file from Thunderbird and .xml file for the external indexing program (exe file)
+	//The timestamp is just here to avoid collision between files in a firm with 1000 workers using this plugin
+    
+		    var timestamp=Math.round(new Date().getTime() / 512)
+		    var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces["nsILocalFile"]);
+		    file.initWithPath(programmeIndexation);  // C'est un pointeur vers le programme d'indexation
+		    var emlFile = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("TmpD", Components.interfaces.nsIFile); 
+		    emlFile.append("mail"+timestamp+".eml");
+		   	var xmlIndexesFile = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("TmpD", Components.interfaces.nsIFile);
+				xmlIndexesFile.append("mail"+timestamp+".xml");
+
+    //Creating and calling the indexation process
+    
+		    var process = Components.classes["@mozilla.org/process/util;1"].createInstance(Components.interfaces.nsIProcess);
+		    process.init(file);
+		    var args = [xmlIndexesFile.path];  // The xml filename is given as a parameter to the external indexing program
+		    process.run(true, args, 1); //The indexing program is called, we are waiting the end of the process
+		   	var exitCode=process.exitValue // We store the return code return code 0:ECM_DB_ClientFolderOK 1:ECM_DB_ClientFolderKO 2:ECM_DB_courrierOK 3:ECM_DB_courrierKO
+
+    //Copying the selected mail content into the .eml file
+    	
+	    	try {// In the eml file file Thunderbird write the mail content
+		    	var content_frame = document.getElementById('content-frame');
+		    	var MessageURI = gFolderDisplay.selectedMessage;
+		    	IETwriteDataOnDisk(MessageURI,emlFile);
+		    }
+		    		catch(e) {
+					alert("error\n" + e.name + ": " + e.message);
+				}
+		
+		//Copying .eml and .xml files with the same name fron the temp folder to the hotdir folder frequently pulled by the ECM job for DB injection
+		
+				try {
+					// Copy files to \\datacl04\DATAVOL05\Import-GED\InjectionWord
+					  var aDir = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
+					  if (!aDir) return false;
+					  //aDir.initWithPath("\\\\datacl04\\DATAVOL05\\Import-GED\\InjectionWord");
+					  if (exitCode==0) {// Case of ClientFolder XML well ended
+					  	aDir.initWithPath(folderInjectionClientFolder);
+						  emlFile.copyTo(aDir,null);
+						  xmlIndexesFile.copyTo(aDir,null);
+					  }
+					  else if (exitCode==1) {//Case of ClientFolder XML badly ended
+					 	 alert(timestamp+"Error indexing ClientFolder :"+exitCode);
+					  }
+					  else if (exitCode==2) {//Case of courrier XML well ended
+					  	aDir.initWithPath(folderInjectionCourrier);
+						  emlFile.copyTo(aDir,null);
+						  xmlIndexesFile.copyTo(aDir,null);
+					  }
+					  else if (exitCode==3) {//Case of courrier XML badly ended
+					  	alert(timestamp+"Error indexing courrier :"+exitCode);
+					  }
+					  else {//Unknown case
+					  	alert("Unknown return code, doing nothing");
+					  }
+					  
+		    }
+		    		catch(e) {
+					alert("error copying files \n" + e.name + ": " + e.message);
+				}
+		
+		//Fin du main du plugin
+		
+				alert(timestamp+"Exit :"+exitCode);
+}
+	
+// Function called to write on the disk
+function  IETwriteDataOnDisk(MessageURI, file) {
+	
+  var content = "";
+  var uri = MessageURI.folder.getUriForMsg(MessageURI);
+  var messenger = Components.classes["@mozilla.org/messenger;1"].createInstance(Components.interfaces.nsIMessenger); //BNO
+  var MsgService = messenger.messageServiceFromURI(uri);
+  var MsgStream =  Components.classes["@mozilla.org/network/sync-stream-listener;1"].createInstance();
+  var consumer = MsgStream.QueryInterface(Components.interfaces.nsIInputStream);
+  var ScriptInput = Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance();
+  var ScriptInputStream = ScriptInput.QueryInterface(Components.interfaces.nsIScriptableInputStream);
+  ScriptInputStream.init(consumer);
+  try {
+    MsgService.streamMessage(uri, MsgStream, msgWindow, null, false, null);
+  } catch (ex) {
+    alert("error: "+ex)
+  }
+  ScriptInputStream .available();
+  while (ScriptInputStream .available()) {
+    content = content + ScriptInputStream .read(512);
+  }
+	
+	var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
+	foStream.init(file, 0x02 | 0x08 | 0x20, 0664, 0); // write, create, truncate
+	
+	if (content)
+			foStream.write(content,content.length);
+	foStream.close();
+}
+
+</script>
+
+<popup id="mailContext">
+   <menuitem id="my_option" label="Send To GED" oncommand="InjectionGED()"/>
+</popup>
+ 
+</overlay>
