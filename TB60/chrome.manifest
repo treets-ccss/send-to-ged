@@ -1,0 +1,2 @@
+content     sendtoged    chrome/content/
+overlay chrome://messenger/content/messenger.xul chrome://sendtoged/content/sendtoged.xul

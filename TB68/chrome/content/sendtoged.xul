@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<overlay id="sample" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+<script src="chrome://sendtoged/content/overlay.js"></script>
+
+<popup id="mailContext">
+   <menuitem id="my_option" label="Send To GED" oncommand="InjectionGED()"/>
+</popup>
+ 
+</overlay>
