@@ -1,0 +1,18 @@
+{
+  "manifest_version": 2,
+  "applications": {
+    "gecko": {
+      "id": "sendtoged@benoit.noss",
+      "strict_min_version": "68.0"
+    }
+  },
+  "name": "SendToGed",
+  "description": "Injects a mail into hotfolder for future OpenText upload",
+  "version": "2.0",
+  "icons": {
+    "16": "chrome/content/icon16.png"
+  },
+  "legacy": {
+      "type": "xul"
+    }
+}
