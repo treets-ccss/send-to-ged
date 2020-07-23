@@ -17,7 +17,7 @@ function InjectionGED()
 		//Creation des pointeurs et nom des futurs fichier .eml et .xml et du processus d'indexation
     
 		    var timestamp=Math.round(new Date().getTime() / 512)
-		    var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces["nsILocalFile"]);
+			var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsIFile);
 		    file.initWithPath(programmeIndexation);  // C'est un pointeur vers le programme d'indexation
 		    var emlFile = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("TmpD", Components.interfaces.nsIFile); 
 		    emlFile.append("mail"+timestamp+".eml");
@@ -47,7 +47,7 @@ function InjectionGED()
 		
 				try {
 					// Copie des fichiers vers \\datacl04\DATAVOL05\Import-GED\InjectionWord
-					  var aDir = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
+					  var aDir = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsIFile);
 					  if (!aDir) return false;
 					  //aDir.initWithPath("\\\\datacl04\\DATAVOL05\\Import-GED\\InjectionWord");
 					  if (exitCode==0) {// Case of ClientFolder XML well ended
