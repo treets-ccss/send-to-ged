@@ -77,7 +77,12 @@ function InjectionGED()
 		
 		//Fin du main du plugin
 		
-				alert(timestamp+"Exit :"+exitCode);
+			if (exitCode==0 || exitCode==2) {
+				alert("Le mail sera visible dans la GED d'ici 20 minutes environ");
+			} else {
+				alert("Problème lors de l'indexation du mail ou de l'injection des fichiers "+timestamp +" exitCode"+exitCode);
+			}
+				
 }
 	
 
@@ -101,11 +106,13 @@ function  IETwriteDataOnDisk(MessageURI, file) {
   while (ScriptInputStream .available()) {
     content = content + ScriptInputStream .read(512);
   }
-	
 	var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
 	foStream.init(file, 0x02 | 0x08 | 0x20, 0664, 0); // write, create, truncate
-	
-	if (content)
-			foStream.write(content,content.length);
+	if (content) {
+		foStream.write(content,content.length);
+	} else {
+		alert("Attention, le fichier eml "+file.path+" semble vide, veuillez contacter votre méthodologie");
+	}
+			
 	foStream.close();
 }
