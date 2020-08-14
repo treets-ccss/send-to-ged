@@ -4,7 +4,7 @@ async function main() {
     // https://thunderbird-webextensions.readthedocs.io/en/latest/menus.html#menus-onclickdata
     messenger.menus.create({
         contexts : ["message_list"],
-        id: "edit_email_subject_entry",
+        id: "Send2Ged@secu.lu",
         onclick : passMsg,
         title: messenger.i18n.getMessage("lang.menuTitle")
     });
