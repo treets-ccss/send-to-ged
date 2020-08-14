@@ -1,0 +1,7 @@
+{
+  "name": "gedindexationemail",
+  "description": "Indexing program",
+  "path": "\\\\datacl04\\DATAVOL041\\ProgsW10AppsX32\\CissApps\\GEDIndexationEmail\\GEDIndexationEmail.exe",
+  "type": "stdio",
+  "allowed_extensions": [ "Send2Ged@secu.lu" ]
+}
